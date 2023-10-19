@@ -1,5 +1,8 @@
 name: Deploy Appwrite
 description: Deploy Appwrite from appwrite.json file
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
 
 inputs:
   endpoint:
