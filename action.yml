@@ -1,0 +1,52 @@
+name: Deploy Appwrite
+description: Deploy Appwrite from appwrite.json file
+
+inputs:
+  endpoint:
+    description: 'Appwrite endpoint URL'
+    required: true
+  project:
+    description: 'Appwrite project ID'
+    required: true
+  key:
+    description: 'Appwrite API key'
+    required: true
+  root_dir:
+    description: 'Directory of appwrite.json'
+    default: './appwrite'
+
+
+runs:
+  using: composite
+  steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install jq
+      shell: bash
+      run: sudo apt install jq -y
+
+    - name: Populate appwrite.json
+      shell: bash
+      run: |
+        jq '.projectId = "${{ inputs.project }}"' ${{ inputs.root_dir }}/appwrite.json > ${{ inputs.root_dir }}/tmp.json
+        mv ${{ inputs.root_dir }}/tmp.json ${{ inputs.root_dir }}/appwrite.json
+
+    - name: Install Appwrite CLI
+      shell: bash
+      run: npm install -g appwrite-cli@2.0.2
+
+    - name: Setup Appwrite CLI
+      shell: bash
+      run: |
+        appwrite client \
+        --endpoint '${{ inputs.endpoint }}' \
+        --projectId '${{ inputs.project }}' \
+        --key '${{ inputs.key }}'
+
+    - name: Deploy Appwrite DB
+      shell: bash
+      run: |
+        cd ${{ inputs.root_dir }}
+        appwrite deploy collection --all --yes
